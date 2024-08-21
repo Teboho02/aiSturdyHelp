@@ -6,7 +6,7 @@ const { getAnalytics } = require('firebase/analytics');
 // Your Firebase configuration will be set after fetching the key
 
 async function fetchKey() {
-    const response = await fetch('/api/home/key.js');
+    const response = await fetch('https://ai-sturdy-help.vercel.app/api/home/key.js');
 
     if (!response.ok) {
         throw new Error(`Response status: ${response.status}`);
