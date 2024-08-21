@@ -24,7 +24,7 @@ const db = getFirestore(app);
 async function verifyToken(idToken) {
     const ticket = await client.verifyIdToken({
         idToken: idToken,
-        audience: '309870602306-546sbid5cq1trf3o2q1vddds9ecua4s2.apps.googleusercontent.com',  // Replace with your OAuth 2.0 Client ID
+        audience: process.env.OAuth,  // Replace with your OAuth 2.0 Client ID
     });
     const payload = ticket.getPayload();  // Extract the user's profile information
     return payload;
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
     try {
         const payload = await verifyToken(id_token);  // Verify the token
 
-        const userRef = doc(db, 'users', payload.sub);  // Correct Firestore document reference
+        const userRef = doc(db, 'users', payload.email);  // Correct Firestore document reference
         const userDoc = await getDoc(userRef);
 
         if (!userDoc.exists()) {
