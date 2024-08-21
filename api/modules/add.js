@@ -2,6 +2,7 @@
 const { initializeApp } = require('firebase/app');
 const { getFirestore, doc, setDoc } = require('firebase/firestore');
 
+
 // Your Firebase configuration will be set after fetching the key
 
 async function fetchKey() {
@@ -56,14 +57,14 @@ export default async function handler(req, res) {
         try {
             const Name = req.body.name;
             const Mark = req.body.mark;
-
-
-
+            
+            //da
             const name = Name;
             const mark = Mark;
 
+            //send the information to the database
           
-            res.status(200).json({ response: Name });
+            res.status(200).json({ response: result });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
