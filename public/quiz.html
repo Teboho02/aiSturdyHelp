@@ -131,6 +131,60 @@
 
     <script>
         // Simulated database of questions
+
+
+        const inputValue = `
+    create a quiz about the history of South Africa. You should return the answer in the format:
+
+    history: {
+        'apartheid': [
+            {
+                question: "In which year did the apartheid policy officially begin in South Africa?",
+                options: ["1948", "1956", "1961", "1976"],
+                correctAnswer: 0
+            },
+            {
+                question: "Who was the first black president of South Africa?",
+                options: ["Nelson Mandela", "Thabo Mbeki", "Jacob Zuma", "Cyril Ramaphosa"],
+                correctAnswer: 0
+            }
+        ],
+        'boer wars': [
+            {
+                question: "What were the Boer Wars primarily fought over?",
+                options: ["Territory", "Gold and Diamonds", "Religion", "Language"],
+                correctAnswer: 1
+            },
+            {
+                question: "Which two groups fought in the Boer Wars?",
+                options: ["British and French", "Dutch and Zulu", "British and Boer", "Zulu and Xhosa"],
+                correctAnswer: 2
+            }
+        ]
+    }
+`;
+
+
+        fetch('/api/home/home.js', {
+                method: 'POST', // or 'GET' based on your API's method
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ str: inputValue }) // send the input value as JSON
+            })
+            .then(response => response.json()) // parse the JSON response
+            .then(data => {
+                // Update the response element with the result
+                document.getElementById('res').innerText = `Response: ${data.response}`; // adjust as necessary
+            })
+            .catch(error => {
+                // Handle any errors
+                console.error('Error:', error);
+                document.getElementById('res').innerText = 'Error: Unable to fetch response.';
+            });
+
+
+
         const quizDatabase = {
             history: {
                 'world war 2': [
