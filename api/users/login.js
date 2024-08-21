@@ -1,11 +1,14 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+// Import the Firebase functions using CommonJS
+const { initializeApp } = require('firebase/app');
+const { getFirestore, doc, setDoc } = require('firebase/firestore');
+const { getAnalytics } = require('firebase/analytics');
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Your Firebase configuration
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db = getFirestore(app);
 
 async function fetchKey() {
     const response = await fetch(/api/home/key.js);
@@ -33,14 +36,21 @@ const firebaseConfig = {
   measurementId: "G-L12NERV1JR"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 
 
+// Example usage of Firestore
+async function addData() {
+  try {
+    await setDoc(doc(db, 'cities', 'new-city-id'), {
+      name: 'New City',
+      state: 'CA',
+      country: 'USA'
+    });
+    console.log('Document written successfully!');
+  } catch (error) {
+    console.error('Error adding document: ', error);
+  }
+}
 
-
-
-import { doc, setDoc } from "firebase/firestore"; 
-
-await setDoc(doc(db, "cities", "new-city-id"), data);
+// Call the function
+addData();
