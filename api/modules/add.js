@@ -54,14 +54,16 @@ async function initializeFirebase() {
 export default async function handler(req, res) {
     if (req.method === 'POST') {
         try {
-            const { str } = req.body;
+            const Name = req.body.name;
+            const Mark = req.body.mark;
+
 
             if (!str) {
                 return res.status(400).json({ error: 'No prompt provided' + req.body.name });
             }
 
-            const name = str.name;
-            const mark = str.mark;
+            const name = Name;
+            const mark = Mark;
 
           
             res.status(200).json({ response: result });
