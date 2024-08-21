@@ -148,7 +148,7 @@
             .then(response => response.json()) // parse the JSON response
             .then(data => {
                 // Update the response element with the result
-                //console.log(data.response);
+                console.log(data.response);
                 quizDatabase = data.response;
             })
             .catch(error => {
