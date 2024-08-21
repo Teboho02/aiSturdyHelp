@@ -1,7 +1,26 @@
 function handleCredentialResponse(response) {
-    // This is where you would handle the Google Sign-In response
-    console.log("Encoded JWT ID token: " + response.credential);
-    // You can send this token to your server for further authentication/authorization
+    const idToken = response.credential;
+    console.log("Encoded JWT ID token: " + idToken);
+
+    // Sending the token to the server for verification
+    fetch('/api/auth/google/auth.js', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id_token: idToken })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Handle the response from your server
+        if (data.success) {
+            // Redirect the user or update the UI
+            window.location.href = "home.html";
+        } else {
+            console.error('Failed to authenticate with the server:', data.message);
+        }
+    })
+    .catch(error => console.error('Error sending token to server:', error));
 }
 
 window.onload = function () {
