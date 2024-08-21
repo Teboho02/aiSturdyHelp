@@ -142,7 +142,7 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ str: inputValue }) // send the input value as JSON
+                body: JSON.stringify({ str: "generate a quiz about Computer science." }) // send the input value as JSON
             })
             .then(response => response.json()) // parse the JSON response
             .then(data => {
