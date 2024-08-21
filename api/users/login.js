@@ -32,12 +32,6 @@ async function initializeFirebase() {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    if (await isSupported()) {
-        const analytics = getAnalytics(app);
-        console.log('Firebase Analytics initialized.');
-    } else {
-        console.log('Firebase Analytics is not supported in this environment.');
-    }
 
 
     // Example usage of Firestore
