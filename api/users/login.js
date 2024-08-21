@@ -1,6 +1,7 @@
 // Import the Firebase functions using CommonJS
 const { initializeApp } = require('firebase/app');
 const { getFirestore, doc, setDoc } = require('firebase/firestore');
+const { getAnalytics } = require('firebase/analytics');
 
 // Your Firebase configuration will be set after fetching the key
 
@@ -32,6 +33,14 @@ async function initializeFirebase() {
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
     const db = getFirestore(app);
+
+    if (await isSupported()) {
+        const analytics = getAnalytics(app);
+        console.log('Firebase Analytics initialized.');
+    } else {
+        console.log('Firebase Analytics is not supported in this environment.');
+    }
+
 
     // Example usage of Firestore
     async function addData() {
