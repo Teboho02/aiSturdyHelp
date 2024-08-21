@@ -24,7 +24,7 @@ const myKey = await fetchKey();
 
 
 const firebaseConfig = {
-  apiKey: myKey,
+  apiKey: myKey.myKey,
   authDomain: "aisturdyhelp.firebaseapp.com",
   projectId: "aisturdyhelp",
   storageBucket: "aisturdyhelp.appspot.com",
