@@ -135,7 +135,8 @@
 
 
         const inputValue = "generate a quiz about Computer science.";
-    
+
+        let quizDatabase;
 
         fetch('/api/quizz/generate.js', {
                 method: 'POST', // or 'GET' based on your API's method
@@ -147,97 +148,14 @@
             .then(response => response.json()) // parse the JSON response
             .then(data => {
                 // Update the response element with the result
-                console.log(data.response);
-                document.getElementById('res').innerText = `Response: ${data.response}`; // adjust as necessary
+                //console.log(data.response);
+                quizDatabase = data.response;
             })
             .catch(error => {
                 // Handle any errors
                 console.error('Error:', error);
-                document.getElementById('res').innerText = 'Error: Unable to fetch response.';
             });
 
-
-
-        const quizDatabase = {
-            history: {
-                'world war 2': [
-                    {
-                        question: "In which year did World War II end?",
-                        options: ["1943", "1945", "1947", "1950"],
-                        correctAnswer: 1
-                    },
-                    {
-                        question: "Who was the leader of Nazi Germany during World War II?",
-                        options: ["Joseph Stalin", "Winston Churchill", "Adolf Hitler", "Franklin D. Roosevelt"],
-                        correctAnswer: 2
-                    }
-                ],
-                'french revolution': [
-                    {
-                        question: "In which year did the French Revolution begin?",
-                        options: ["1769", "1779", "1789", "1799"],
-                        correctAnswer: 2
-                    },
-                    {
-                        question: "What was the name of the French king executed during the French Revolution?",
-                        options: ["Louis XIV", "Louis XV", "Louis XVI", "Louis XVII"],
-                        correctAnswer: 2
-                    }
-                ]
-            },
-            science: {
-                'solar system': [
-                    {
-                        question: "Which planet is known as the Red Planet?",
-                        options: ["Venus", "Mars", "Jupiter", "Saturn"],
-                        correctAnswer: 1
-                    },
-                    {
-                        question: "How many planets are in our solar system?",
-                        options: ["7", "8", "9", "10"],
-                        correctAnswer: 1
-                    }
-                ],
-                'human body': [
-                    {
-                        question: "How many chambers does the human heart have?",
-                        options: ["2", "3", "4", "5"],
-                        correctAnswer: 2
-                    },
-                    {
-                        question: "What is the largest organ in the human body?",
-                        options: ["Brain", "Liver", "Skin", "Lungs"],
-                        correctAnswer: 2
-                    }
-                ]
-            },
-            literature: {
-                'shakespeare': [
-                    {
-                        question: "Who wrote the play 'Romeo and Juliet'?",
-                        options: ["Charles Dickens", "William Shakespeare", "Jane Austen", "Mark Twain"],
-                        correctAnswer: 1
-                    },
-                    {
-                        question: "In which city is Shakespeare's play 'Romeo and Juliet' set?",
-                        options: ["London", "Paris", "Venice", "Verona"],
-                        correctAnswer: 3
-                    }
-                ],
-                'poetry': [
-                    {
-                        question: "Who wrote the poem 'The Raven'?",
-                        options: ["Edgar Allan Poe", "Emily Dickinson", "Walt Whitman", "Robert Frost"],
-                        correctAnswer: 0
-                    },
-                    {
-                        question: "What is a sonnet?",
-                        options: ["A 14-line poem", "A type of novel", "A musical instrument", "A painting technique"],
-                        correctAnswer: 0
-                    }
-                ]
-            }
-        };
 
         const quizForm = document.getElementById('quiz-form');
         const quizContainer = document.getElementById('quiz-container');
