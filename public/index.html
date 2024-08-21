@@ -1,50 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-        
-
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="script.js" defer></script>
 </head>
-
-
 <body>
-
-
-
-    <input type="text" id="str" placeholder="Enter text">
-    <button onclick="process()">Send</button>
-    
-    <h1 id="res">Response:</h1>
-    
-    <script>
-        function process() {
-            // Get the input value
-            const inputValue = document.getElementById('str').value;
-    
-            // Make a fetch request to the API
-            fetch('/api/home/home.js', {
-                method: 'POST', // or 'GET' based on your API's method
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ str: inputValue }) // send the input value as JSON
-            })
-            .then(response => response.json()) // parse the JSON response
-            .then(data => {
-                // Update the response element with the result
-                document.getElementById('res').innerText = `Response: ${data.response}`; // adjust as necessary
-            })
-            .catch(error => {
-                // Handle any errors
-                console.error('Error:', error);
-                document.getElementById('res').innerText = 'Error: Unable to fetch response.';
-            });
-        }
-    </script>
-    
-    
+    <div class="login-container">
+        <h1>Login</h1>
+        <form id="login-form">
+            <div class="input-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <div id="g_id_onload"
+             data-client_id="YOUR_GOOGLE_CLIENT_ID"
+             data-context="signin"
+             data-ux_mode="popup"
+             data-login_uri="http://localhost:8000/login"
+             data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin" data-type="standard"></div>
+    </div>
 </body>
-
-
-
 </html>
