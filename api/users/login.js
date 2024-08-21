@@ -1,7 +1,6 @@
 // Import the Firebase functions using CommonJS
 const { initializeApp } = require('firebase/app');
 const { getFirestore, doc, setDoc } = require('firebase/firestore');
-const { getAnalytics } = require('firebase/analytics');
 
 // Your Firebase configuration will be set after fetching the key
 
@@ -31,7 +30,6 @@ async function initializeFirebase() {
 
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
     const db = getFirestore(app);
 
     if (await isSupported()) {
