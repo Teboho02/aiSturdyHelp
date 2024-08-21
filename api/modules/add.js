@@ -57,7 +57,7 @@ export default async function handler(req, res) {
             const { str } = req.body;
 
             if (!str) {
-                return res.status(400).json({ error: 'No prompt provided' + req.body });
+                return res.status(400).json({ error: 'No prompt provided' + req.body.name });
             }
 
             const name = str.name;
