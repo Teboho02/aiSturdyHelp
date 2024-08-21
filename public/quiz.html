@@ -130,90 +130,90 @@
     </div>
 
     <script>
-        // Simulated database of questions
-
-
-
         const inputValue = "generate a quiz about Computer science.";
-
+    
         let quizDatabase;
-
+    
         fetch('/api/quizz/generate.js', {
-                method: 'POST', // or 'GET' based on your API's method
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ str: "inputValue" }) // send the input value as JSON
+                body: JSON.stringify({ str: inputValue })
             })
-            .then(response => response.json()) // parse the JSON response
+            .then(response => response.json())
             .then(data => {
-                // Update the response element with the result
                 console.log(data.response);
                 quizDatabase = data.response;
+                renderAllQuizzes(); // Call the function to render all quizzes
             })
             .catch(error => {
-                // Handle any errors
                 console.error('Error:', error);
             });
-
-
-        const quizForm = document.getElementById('quiz-form');
+    
         const quizContainer = document.getElementById('quiz-container');
         const questionsContainer = document.getElementById('questions');
         const submitQuizButton = document.getElementById('submit-quiz');
         const resultDiv = document.getElementById('result');
-
+    
         let currentQuiz = [];
-
-        quizForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const module = document.getElementById('module').value;
-            const topic = document.getElementById('topic').value.toLowerCase();
-
-            if (1==1) {
-                currentQuiz = quizDatabase[module][topic];
-                renderQuiz(module, topic);
-            } else {
-                alert('No quiz available for the selected module and topic. Please try another combination.');
-            }
-        });
-
-        function renderQuiz(module, topic) {
+    
+        function renderAllQuizzes() {
             quizContainer.style.display = 'block';
             submitQuizButton.style.display = 'block';
-            document.getElementById('quiz-title').textContent = `Quiz on ${module.charAt(0).toUpperCase() + module.slice(1)} - ${topic.charAt(0).toUpperCase() + topic.slice(1)}`;
-            
+    
             questionsContainer.innerHTML = '';
-            currentQuiz.forEach((q, index) => {
-                const questionDiv = document.createElement('div');
-                questionDiv.className = 'question';
-                questionDiv.innerHTML = `
-                    <p><strong>Question ${index + 1}:</strong> ${q.question}</p>
-                    <ul class="options">
-                        ${q.options.map((option, i) => `
-                            <li>
-                                <label>
-                                    <input type="radio" name="q${index}" value="${i}">
-                                    ${option}
-                                </label>
-                            </li>
-                        `).join('')}
-                    </ul>
-                `;
-                questionsContainer.appendChild(questionDiv);
+    
+            Object.keys(quizDatabase).forEach(module => {
+                Object.keys(quizDatabase[module]).forEach(topic => {
+                    const quiz = quizDatabase[module][topic];
+                    const quizTitle = document.createElement('h2');
+                    quizTitle.textContent = `Quiz on ${module.charAt(0).toUpperCase() + module.slice(1)} - ${topic.charAt(0).toUpperCase() + topic.slice(1)}`;
+                    questionsContainer.appendChild(quizTitle);
+    
+                    quiz.forEach((q, index) => {
+                        const questionDiv = document.createElement('div');
+                        questionDiv.className = 'question';
+                        questionDiv.innerHTML = `
+                            <p><strong>Question ${index + 1}:</strong> ${q.question}</p>
+                            <ul class="options">
+                                ${q.options.map((option, i) => `
+                                    <li>
+                                        <label>
+                                            <input type="radio" name="q${index}_${module}_${topic}" value="${i}">
+                                            ${option}
+                                        </label>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        `;
+                        questionsContainer.appendChild(questionDiv);
+                    });
+                });
             });
         }
-
+    
         submitQuizButton.addEventListener('click', function() {
             let score = 0;
-            currentQuiz.forEach((q, index) => {
-                const selectedAnswer = document.querySelector(`input[name="q${index}"]:checked`);
-                if (selectedAnswer && parseInt(selectedAnswer.value) === q.correctAnswer) {
-                    score++;
-                }
+            let totalQuestions = 0;
+    
+            Object.keys(quizDatabase).forEach(module => {
+                Object.keys(quizDatabase[module]).forEach(topic => {
+                    const quiz = quizDatabase[module][topic];
+                    totalQuestions += quiz.length;
+    
+                    quiz.forEach((q, index) => {
+                        const selectedAnswer = document.querySelector(`input[name="q${index}_${module}_${topic}"]:checked`);
+                        if (selectedAnswer && parseInt(selectedAnswer.value) === q.correctAnswer) {
+                            score++;
+                        }
+                    });
+                });
             });
-            resultDiv.textContent = `Your score: ${score} out of ${currentQuiz.length}`;
+    
+            resultDiv.textContent = `Your score: ${score} out of ${totalQuestions}`;
         });
     </script>
+    
 </body>
 </html>
