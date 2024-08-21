@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marks Management System</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .modules {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .module {
+            background-color: #3498db;
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .module:hover {
+            background-color: #2980b9;
+        }
+
+        #assessments {
+            display: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        form {
+            display: grid;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+
+        button {
+            background-color: #2ecc71;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #27ae60;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+
+            .modules {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Marks Management System</h1>
+        <div class="modules" id="modules"></div>
+        <div id="assessments">
+            <h2 id="module-title"></h2>
+            <table id="marks-table">
+                <thead>
+                    <tr>
+                        <th>Assessment</th>
+                        <th>Mark</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <form id="add-assessment-form">
+                <input type="text" id="assessment-name" placeholder="Assessment Name" required>
+                <input type="number" id="assessment-mark" placeholder="Mark" min="0" max="100" required>
+                <button type="submit">Add Assessment</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Simulated database of modules and marks
+        let marksData = {
+            'Mathematics': [
+                { name: 'Midterm Exam', mark: 85 },
+                { name: 'Final Exam', mark: 92 }
+            ],
+            'History': [
+                { name: 'Essay', mark: 78 },
+                { name: 'Presentation', mark: 88 }
+            ],
+            'Physics': [
+                { name: 'Lab Report', mark: 90 },
+                { name: 'Quiz', mark: 82 }
+            ]
+        };
+
+        const modulesContainer = document.getElementById('modules');
+        const assessmentsSection = document.getElementById('assessments');
+        const moduleTitle = document.getElementById('module-title');
+        const marksTable = document.getElementById('marks-table').getElementsByTagName('tbody')[0];
+        const addAssessmentForm = document.getElementById('add-assessment-form');
+
+        let currentModule = '';
+
+        // Render modules
+        function renderModules() {
+            modulesContainer.innerHTML = '';
+            for (let module in marksData) {
+                const moduleElement = document.createElement('div');
+                moduleElement.className = 'module';
+                moduleElement.textContent = module;
+                moduleElement.addEventListener('click', () => showAssessments(module));
+                modulesContainer.appendChild(moduleElement);
+            }
+        }
+
+        // Show assessments for a module
+        function showAssessments(module) {
+            currentModule = module;
+            moduleTitle.textContent = module;
+            assessmentsSection.style.display = 'block';
+            renderMarksTable();
+        }
+
+        // Render marks table
+        function renderMarksTable() {
+            marksTable.innerHTML = '';
+            marksData[currentModule].forEach(assessment => {
+                const row = marksTable.insertRow();
+                row.insertCell(0).textContent = assessment.name;
+                row.insertCell(1).textContent = assessment.mark;
+            });
+        }
+
+        // Add new assessment
+        addAssessmentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('assessment-name').value;
+            const mark = parseInt(document.getElementById('assessment-mark').value);
+            marksData[currentModule].push({ name, mark });
+            renderMarksTable();
+            addAssessmentForm.reset();
+        });
+
+        // Initialize
+        renderModules();
+
+        // Add new module functionality
+        const addModuleForm = document.createElement('form');
+        addModuleForm.innerHTML = `
+            <input type="text" id="new-module-name" placeholder="New Module Name" required>
+            <button type="submit">Add Module</button>
+        `;
+        addModuleForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newModuleName = document.getElementById('new-module-name').value;
+            if (!marksData[newModuleName]) {
+                marksData[newModuleName] = [];
+                renderModules();
+                addModuleForm.reset();
+            } else {
+                alert('Module already exists!');
+            }
+        });
+        document.querySelector('.container').appendChild(addModuleForm);
+    </script>
+</body>
+</html>
