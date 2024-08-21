@@ -197,6 +197,7 @@
             let score = 0;
             let totalQuestions = 0;
     
+<<<<<<< HEAD
             Object.keys(quizDatabase).forEach(topic => {
                 const quiz = quizDatabase[topic];
                 totalQuestions += quiz.length;
@@ -206,6 +207,19 @@
                     if (selectedAnswer && parseInt(selectedAnswer.value) === q.correctAnswer) {
                         score++;
                     }
+=======
+            Object.keys(quizDatabase).forEach(module => {
+                Object.keys(quizDatabase[module]).forEach(topic => {
+                    const quiz = quizDatabase[module][topic];
+                    totalQuestions += quiz.length;
+    
+                    quiz.forEach((q, index) => {
+                        const selectedAnswer = document.querySelector(`input[name="q${index}_${module}_${topic}"]:checked`);
+                        if (selectedAnswer && parseInt(selectedAnswer.value) === q.correctAnswer) {
+                            score++;
+                        }
+                    });
+>>>>>>> ff449bd89eeb8f20f91180ce9b83a52ffac0145d
                 });
             });
     
@@ -213,9 +227,12 @@
         });
     </script>
     
+<<<<<<< HEAD
 
 
 
       
+=======
+>>>>>>> ff449bd89eeb8f20f91180ce9b83a52ffac0145d
 </body>
 </html>
