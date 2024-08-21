@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Study Plan</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .week-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #current-week {
+            font-weight: bold;
+        }
+
+        #task-list {
+            list-style-type: none;
+            margin-bottom: 20px;
+        }
+
+        .task-item {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+        }
+
+        .task-item input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .task-item.completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        #add-task-form {
+            display: grid;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        input[type="text"], input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+
+            button {
+                padding: 8px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Interactive Study Plan</h1>
+        <div class="week-navigation">
+            <button id="prev-week">Previous Week</button>
+            <span id="current-week">Week 1</span>
+            <button id="next-week">Next Week</button>
+        </div>
+        <ul id="task-list"></ul>
+        <form id="add-task-form">
+            <input type="text" id="task-name" placeholder="Enter task name" required>
+            <input type="date" id="task-date" required>
+            <button type="submit">Add Task</button>
+        </form>
+    </div>
+
+    <script>
+        let currentWeek = 1;
+        let tasks = JSON.parse(localStorage.getItem('studyTasks')) || {};
+
+        const taskList = document.getElementById('task-list');
+        const addTaskForm = document.getElementById('add-task-form');
+        const currentWeekSpan = document.getElementById('current-week');
+
+        function updateWeekDisplay() {
+            currentWeekSpan.textContent = `Week ${currentWeek}`;
+        }
+
+        function renderTasks() {
+            taskList.innerHTML = '';
+            const weekTasks = tasks[currentWeek] || [];
+            weekTasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.className = 'task-item';
+                if (task.completed) li.classList.add('completed');
+                li.innerHTML = `
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${currentWeek}, ${index})">
+                    <span>${task.name} - ${task.date}</span>
+                `;
+                taskList.appendChild(li);
+            });
+        }
+
+        function addTask(event) {
+            event.preventDefault();
+            const taskName = document.getElementById('task-name').value;
+            const taskDate = document.getElementById('task-date').value;
+            if (!tasks[currentWeek]) tasks[currentWeek] = [];
+            tasks[currentWeek].push({ name: taskName, date: taskDate, completed: false });
+            localStorage.setItem('studyTasks', JSON.stringify(tasks));
+            renderTasks();
+            addTaskForm.reset();
+        }
+
+        function toggleTask(week, index) {
+            tasks[week][index].completed = !tasks[week][index].completed;
+            localStorage.setItem('studyTasks', JSON.stringify(tasks));
+            renderTasks();
+        }
+
+        document.getElementById('prev-week').addEventListener('click', () => {
+            if (currentWeek > 1) {
+                currentWeek--;
+                updateWeekDisplay();
+                renderTasks();
+            }
+        });
+
+        document.getElementById('next-week').addEventListener('click', () => {
+            currentWeek++;
+            updateWeekDisplay();
+            renderTasks();
+        });
+
+        addTaskForm.addEventListener('submit', addTask);
+
+        // Initial render
+        updateWeekDisplay();
+        renderTasks();
+    </script>
+</body>
+</html>

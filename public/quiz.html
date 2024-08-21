@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Quiz Generator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        form {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        select, input[type="text"], button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #quiz-container {
+            display: none;
+        }
+
+        .question {
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .options {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .options li {
+            margin-bottom: 10px;
+        }
+
+        .options label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .options input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        #result {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+
+            select, input[type="text"], button {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dynamic Quiz Generator</h1>
+        <form id="quiz-form">
+            <select id="module" required>
+                <option value="">Select a module</option>
+                <option value="history">History</option>
+                <option value="science">Science</option>
+                <option value="literature">Literature</option>
+            </select>
+            <input type="text" id="topic" placeholder="Enter a topic" required>
+            <button type="submit">Generate Quiz</button>
+        </form>
+        <div id="quiz-container">
+            <h2 id="quiz-title"></h2>
+            <div id="questions"></div>
+            <button id="submit-quiz" style="display: none;">Submit Quiz</button>
+        </div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // Simulated database of questions
+        const quizDatabase = {
+            history: {
+                'world war 2': [
+                    {
+                        question: "In which year did World War II end?",
+                        options: ["1943", "1945", "1947", "1950"],
+                        correctAnswer: 1
+                    },
+                    {
+                        question: "Who was the leader of Nazi Germany during World War II?",
+                        options: ["Joseph Stalin", "Winston Churchill", "Adolf Hitler", "Franklin D. Roosevelt"],
+                        correctAnswer: 2
+                    }
+                ],
+                'french revolution': [
+                    {
+                        question: "In which year did the French Revolution begin?",
+                        options: ["1769", "1779", "1789", "1799"],
+                        correctAnswer: 2
+                    },
+                    {
+                        question: "What was the name of the French king executed during the French Revolution?",
+                        options: ["Louis XIV", "Louis XV", "Louis XVI", "Louis XVII"],
+                        correctAnswer: 2
+                    }
+                ]
+            },
+            science: {
+                'solar system': [
+                    {
+                        question: "Which planet is known as the Red Planet?",
+                        options: ["Venus", "Mars", "Jupiter", "Saturn"],
+                        correctAnswer: 1
+                    },
+                    {
+                        question: "How many planets are in our solar system?",
+                        options: ["7", "8", "9", "10"],
+                        correctAnswer: 1
+                    }
+                ],
+                'human body': [
+                    {
+                        question: "How many chambers does the human heart have?",
+                        options: ["2", "3", "4", "5"],
+                        correctAnswer: 2
+                    },
+                    {
+                        question: "What is the largest organ in the human body?",
+                        options: ["Brain", "Liver", "Skin", "Lungs"],
+                        correctAnswer: 2
+                    }
+                ]
+            },
+            literature: {
+                'shakespeare': [
+                    {
+                        question: "Who wrote the play 'Romeo and Juliet'?",
+                        options: ["Charles Dickens", "William Shakespeare", "Jane Austen", "Mark Twain"],
+                        correctAnswer: 1
+                    },
+                    {
+                        question: "In which city is Shakespeare's play 'Romeo and Juliet' set?",
+                        options: ["London", "Paris", "Venice", "Verona"],
+                        correctAnswer: 3
+                    }
+                ],
+                'poetry': [
+                    {
+                        question: "Who wrote the poem 'The Raven'?",
+                        options: ["Edgar Allan Poe", "Emily Dickinson", "Walt Whitman", "Robert Frost"],
+                        correctAnswer: 0
+                    },
+                    {
+                        question: "What is a sonnet?",
+                        options: ["A 14-line poem", "A type of novel", "A musical instrument", "A painting technique"],
+                        correctAnswer: 0
+                    }
+                ]
+            }
+        };
+
+        const quizForm = document.getElementById('quiz-form');
+        const quizContainer = document.getElementById('quiz-container');
+        const questionsContainer = document.getElementById('questions');
+        const submitQuizButton = document.getElementById('submit-quiz');
+        const resultDiv = document.getElementById('result');
+
+        let currentQuiz = [];
+
+        quizForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const module = document.getElementById('module').value;
+            const topic = document.getElementById('topic').value.toLowerCase();
+
+            if (quizDatabase[module] && quizDatabase[module][topic]) {
+                currentQuiz = quizDatabase[module][topic];
+                renderQuiz(module, topic);
+            } else {
+                alert('No quiz available for the selected module and topic. Please try another combination.');
+            }
+        });
+
+        function renderQuiz(module, topic) {
+            quizContainer.style.display = 'block';
+            submitQuizButton.style.display = 'block';
+            document.getElementById('quiz-title').textContent = `Quiz on ${module.charAt(0).toUpperCase() + module.slice(1)} - ${topic.charAt(0).toUpperCase() + topic.slice(1)}`;
+            
+            questionsContainer.innerHTML = '';
+            currentQuiz.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                questionDiv.innerHTML = `
+                    <p><strong>Question ${index + 1}:</strong> ${q.question}</p>
+                    <ul class="options">
+                        ${q.options.map((option, i) => `
+                            <li>
+                                <label>
+                                    <input type="radio" name="q${index}" value="${i}">
+                                    ${option}
+                                </label>
+                            </li>
+                        `).join('')}
+                    </ul>
+                `;
+                questionsContainer.appendChild(questionDiv);
+            });
+        }
+
+        submitQuizButton.addEventListener('click', function() {
+            let score = 0;
+            currentQuiz.forEach((q, index) => {
+                const selectedAnswer = document.querySelector(`input[name="q${index}"]:checked`);
+                if (selectedAnswer && parseInt(selectedAnswer.value) === q.correctAnswer) {
+                    score++;
+                }
+            });
+            resultDiv.textContent = `Your score: ${score} out of ${currentQuiz.length}`;
+        });
+    </script>
+</body>
+</html>
