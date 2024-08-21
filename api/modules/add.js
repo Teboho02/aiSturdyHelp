@@ -58,15 +58,12 @@ export default async function handler(req, res) {
             const Mark = req.body.mark;
 
 
-            if (!str) {
-                return res.status(400).json({ error: 'No prompt provided' + req.body.name });
-            }
 
             const name = Name;
             const mark = Mark;
 
           
-            res.status(200).json({ response: result });
+            res.status(200).json({ response: Name });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
