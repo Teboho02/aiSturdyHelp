@@ -16,6 +16,7 @@ export default async function handler(req, res) {
             }
 
             // Generate content using the provided prompt
+            //const predefined = {}
             const result = await run(str);
             res.status(200).json({ response: result });
         } catch (error) {

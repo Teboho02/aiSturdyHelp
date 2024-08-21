@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,7 +29,8 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        h1, h2 {
+        h1,
+        h2 {
             text-align: center;
             margin-bottom: 20px;
             color: #2c3e50;
@@ -65,7 +67,8 @@
             margin-bottom: 20px;
         }
 
-        th, td {
+        th,
+        td {
             padding: 10px;
             border: 1px solid #ddd;
             text-align: left;
@@ -82,7 +85,8 @@
             margin-top: 20px;
         }
 
-        input[type="text"], input[type="number"] {
+        input[type="text"],
+        input[type="number"] {
             width: 100%;
             padding: 8px;
             border: 1px solid #ddd;
@@ -114,6 +118,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Marks Management System</h1>
@@ -193,10 +198,13 @@
         }
 
         // Add new assessment
-        addAssessmentForm.addEventListener('submit', function(e) {
+        addAssessmentForm.addEventListener('submit', function (e) {
             e.preventDefault();
             const name = document.getElementById('assessment-name').value;
             const mark = parseInt(document.getElementById('assessment-mark').value);
+            
+            upload();
+
             marksData[currentModule].push({ name, mark });
             renderMarksTable();
             addAssessmentForm.reset();
@@ -205,13 +213,28 @@
         // Initialize
         renderModules();
 
+        async function upload(name) {
+
+            let res = fetch("https://ai-sturdy-help.vercel.app/api/modules/add.js", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: name,
+                    mark : 55
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+                }
+            });
+
+        }
+
         // Add new module functionality
         const addModuleForm = document.createElement('form');
         addModuleForm.innerHTML = `
             <input type="text" id="new-module-name" placeholder="New Module Name" required>
             <button type="submit">Add Module</button>
         `;
-        addModuleForm.addEventListener('submit', function(e) {
+        addModuleForm.addEventListener('submit', function (e) {
             e.preventDefault();
             const newModuleName = document.getElementById('new-module-name').value;
             if (!marksData[newModuleName]) {
@@ -225,4 +248,5 @@
         document.querySelector('.container').appendChild(addModuleForm);
     </script>
 </body>
+
 </html>
