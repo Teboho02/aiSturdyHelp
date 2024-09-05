@@ -140,42 +140,69 @@
                 <button type="submit">Add Assessment</button>
             </form>
         </div>
+        <form id="add-module-form">
+            <input type="text" id="new-module-name" placeholder="New Module Name" required>
+            <button type="submit">Add Module</button>
+        </form>
     </div>
 
-    <script>
-        // Simulated database of modules and marks
-        let marksData = {
-            'Mathematics': [
-                { name: 'Midterm Exam', mark: 85 },
-                { name: 'Final Exam', mark: 92 }
-            ],
-            'History': [
-                { name: 'Essay', mark: 78 },
-                { name: 'Presentation', mark: 88 }
-            ],
-            'Physics': [
-                { name: 'Lab Report', mark: 90 },
-                { name: 'Quiz', mark: 82 }
-            ]
+    <script type="module">
+        // Import the required Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
+
+        // Fetch the Firebase configuration key
+        async function fetchKey() {
+            const response = await fetch('/api/home/key.js');
+            if (!response.ok) {
+                throw new Error(`Response status: ${response.status}`);
+            }
+            const json = await response.json();
+            return json;
+        }
+
+        const myKey = await fetchKey();
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: myKey.myKey,
+            authDomain: "aisturdyhelp.firebaseapp.com",
+            projectId: "aisturdyhelp",
+            storageBucket: "aisturdyhelp.appspot.com",
+            messagingSenderId: "309870602306",
+            appId: "1:309870602306:web:2273af72ef06e750c0a5db",
+            measurementId: "G-L12NERV1JR"
         };
 
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let marksData = {};
         const modulesContainer = document.getElementById('modules');
         const assessmentsSection = document.getElementById('assessments');
         const moduleTitle = document.getElementById('module-title');
         const marksTable = document.getElementById('marks-table').getElementsByTagName('tbody')[0];
         const addAssessmentForm = document.getElementById('add-assessment-form');
+        const addModuleForm = document.getElementById('add-module-form');
 
         let currentModule = '';
 
         // Render modules
         function renderModules() {
             modulesContainer.innerHTML = '';
-            for (let module in marksData) {
-                const moduleElement = document.createElement('div');
-                moduleElement.className = 'module';
-                moduleElement.textContent = module;
-                moduleElement.addEventListener('click', () => showAssessments(module));
-                modulesContainer.appendChild(moduleElement);
+            if (Object.keys(marksData).length === 0) {
+                const noModulesMessage = document.createElement('p');
+                noModulesMessage.textContent = 'No modules available. Please add some modules.';
+                modulesContainer.appendChild(noModulesMessage);
+            } else {
+                for (let module in marksData) {
+                    const moduleElement = document.createElement('div');
+                    moduleElement.className = 'module';
+                    moduleElement.textContent = module;
+                    moduleElement.addEventListener('click', () => showAssessments(module));
+                    modulesContainer.appendChild(moduleElement);
+                }
             }
         }
 
@@ -190,50 +217,66 @@
         // Render marks table
         function renderMarksTable() {
             marksTable.innerHTML = '';
-            marksData[currentModule].forEach(assessment => {
-                const row = marksTable.insertRow();
-                row.insertCell(0).textContent = assessment.name;
-                row.insertCell(1).textContent = assessment.mark;
-            });
+            if (marksData[currentModule]) {
+                marksData[currentModule].forEach(assessment => {
+                    const row = marksTable.insertRow();
+                    row.insertCell(0).textContent = assessment.name;
+                    row.insertCell(1).textContent = assessment.mark;
+                });
+            }
         }
 
         // Add new assessment
-        addAssessmentForm.addEventListener('submit', function (e) {
+        addAssessmentForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             const name = document.getElementById('assessment-name').value;
             const mark = parseInt(document.getElementById('assessment-mark').value);
             
-            upload();
-
-            marksData[currentModule].push({ name, mark });
-            renderMarksTable();
-            addAssessmentForm.reset();
+            if (currentModule) {
+                await upload(name, mark);
+                if (!marksData[currentModule]) {
+                    marksData[currentModule] = [];
+                }
+                marksData[currentModule].push({ name, mark });
+                renderMarksTable();
+                addAssessmentForm.reset();
+            }
         });
 
-        // Initialize
-        renderModules();
-
-        async function upload(name) {
-
-            let res = fetch("https://ai-sturdy-help.vercel.app/api/modules/add.js", {
-                method: "POST",
-                body: JSON.stringify({
+        // Upload new assessment to Firestore
+        async function upload(name, mark) {
+            try {
+                await addDoc(collection(db, "modules"), {
                     name: name,
-                    mark : 55
-                }),
-                headers: {
-                    "Content-type": "application/json; charset=UTF-8"
-                }
-            });
+                    mark: mark,
+                    module: currentModule
+                });
+                console.log("Document written successfully");
+            } catch (e) {
+                console.error("Error adding document: ", e);
+            }
+        }
 
+        // Fetch and render marks from Firestore
+        async function fetchMarks() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "modules"));
+                marksData = {};  // Initialize as empty
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const module = data.module;
+                    if (!marksData[module]) {
+                        marksData[module] = [];
+                    }
+                    marksData[module].push({ name: data.name, mark: data.mark });
+                });
+                renderModules();
+            } catch (e) {
+                console.error("Error fetching documents: ", e);
+            }
         }
 
         // Add new module functionality
-        const addModuleForm = document.createElement('form');
-        addModuleForm.innerHTML = `
-            <input type="text" id="new-module-name" placeholder="New Module Name" required>
-            <button type="submit">Add Module</button>
-        `;
         addModuleForm.addEventListener('submit', function (e) {
             e.preventDefault();
             const newModuleName = document.getElementById('new-module-name').value;
@@ -245,7 +288,10 @@
                 alert('Module already exists!');
             }
         });
-        document.querySelector('.container').appendChild(addModuleForm);
+
+        // Initialize
+        renderModules();
+        fetchMarks();
     </script>
 </body>
 
