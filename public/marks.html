@@ -137,8 +137,8 @@
             </table>
             <form id="add-assessment-form">
                 <input type="text" id="assessment-name" placeholder="Assessment Name" required>
-                <input type="number" id="assessment-mark" placeholder="Mark" min="0" max="100" required>
-                <input type="number" id="assessment-weight" placeholder="Weight" min="0" max="100" required>
+                <input type="number" id="assessment-mark" placeholder="Mark" step="0.1" min="0" max="100" required>
+                <input type="number" id="assessment-weight" placeholder="Weight" step="0.1" min="0" max="100" required>
                 <button type="submit">Add Assessment</button>
             </form>
             <h3 id="total-marks">Total Marks: 0 / 100</h3>
@@ -156,7 +156,7 @@
         async function fetchKey() {
             const response = await fetch('/api/home/key.js');
             if (!response.ok) {
-                //error
+                throw new Error(`Response status: ${response.status}`);
             }
             const json = await response.json();
             return json;
@@ -233,15 +233,15 @@
                     totalMarks += assessment.mark * (assessment.weight / 100);
                     totalWeight += assessment.weight;
                 });
-                totalMarksElement.textContent = `Total Marks: ${Math.round(totalMarks)} / ${Math.round(totalWeight)}`;
+                totalMarksElement.textContent = `Total Marks: ${totalMarks.toFixed(1)} / ${totalWeight.toFixed(1)}`;
             }
         }
 
         addAssessmentForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             const name = document.getElementById('assessment-name').value;
-            const mark = parseInt(document.getElementById('assessment-mark').value);
-            const weight = parseInt(document.getElementById('assessment-weight').value);
+            const mark = parseFloat(document.getElementById('assessment-mark').value);
+            const weight = parseFloat(document.getElementById('assessment-weight').value);
 
             if (currentModule) {
                 await upload(name, mark, weight);
