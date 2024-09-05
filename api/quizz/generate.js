@@ -2,39 +2,10 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const genAI = new GoogleGenerativeAI(process.env.google);
 
-
 const inputValue = `
-. You should return the answer in the format:
+The following are the questions and options for the quiz. Each question has four options, with the correct answer indicated by the index (0-based).
 
-history: {
-    'apartheid': [
-        {
-            question: "In which year did the apartheid policy officially begin in South Africa?",
-            options: ["1948", "1956", "1961", "1976"],
-            correctAnswer: 0
-        },
-        {
-            question: "Who was the first black president of South Africa?",
-            options: ["Nelson Mandela", "Thabo Mbeki", "Jacob Zuma", "Cyril Ramaphosa"],
-            correctAnswer: 0
-        }
-    ],
-    'boer wars': [
-        {
-            question: "What were the Boer Wars primarily fought over?",
-            options: ["Territory", "Gold and Diamonds", "Religion", "Language"],
-            correctAnswer: 1
-        },
-        {
-            question: "Which two groups fought in the Boer Wars?",
-            options: ["British and French", "Dutch and Zulu", "British and Boer", "Zulu and Xhosa"],
-            correctAnswer: 2
-        }
-    ]
-}
 `;
-
-
 
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -46,7 +17,7 @@ export default async function handler(req, res) {
                 return res.status(400).json({ error: 'No prompt provided' });
             }
 
-            const fullString = str + inputValue;
+            const fullString = inputValue + str;
 
             const result = await run(fullString);
             res.status(200).json({ response: result });

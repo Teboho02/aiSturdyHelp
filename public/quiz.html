@@ -114,9 +114,7 @@
         <form id="quiz-form">
             <select id="module" required>
                 <option value="">Select a module</option>
-                <option value="history">History</option>
-                <option value="science">Science</option>
-                <option value="literature">Literature</option>
+                <!-- Modules will be populated dynamically from Firebase -->
             </select>
             <input type="text" id="topic" placeholder="Enter a topic" required>
             <button type="submit">Generate Quiz</button>
@@ -129,49 +127,89 @@
         <div id="result"></div>
     </div>
 
-        
+    <!-- Firebase App SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.18.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.18.0/firebase-firestore.js"></script>
 
     <script>
-        const inputValue = "generate a quiz about Computer science.";
-    
-        let quizDatabase;
-    
-        fetch('/api/quizz/generate.js', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ str: inputValue })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data.response);
-                quizDatabase = data.response;
-                renderAllQuizzes(); // Call the function to render all quizzes
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const inputValue = "generate a quiz about ";
+
+        const moduleSelect = document.getElementById('module');
         const quizContainer = document.getElementById('quiz-container');
         const questionsContainer = document.getElementById('questions');
         const submitQuizButton = document.getElementById('submit-quiz');
         const resultDiv = document.getElementById('result');
-    
-        let currentQuiz = [];
-    
-        function renderAllQuizzes() {
+
+        let quizDatabase = {};
+
+        async function fetchModules() {
+            try {
+                const snapshot = await db.collection('modules').get();
+                snapshot.forEach(doc => {
+                    const moduleName = doc.data().module;
+                    const option = document.createElement('option');
+                    option.value = moduleName.toLowerCase();
+                    option.textContent = moduleName;
+                    moduleSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error fetching modules: ", error);
+            }
+        }
+
+        async function generateQuiz(e) {
+            e.preventDefault();
+            const module = moduleSelect.value;
+            const topic = document.getElementById('topic').value;
+            if (!module || !topic) {
+                alert('Please select a module and enter a topic');
+                return;
+            }
+
+            const requestBody = {
+                str: inputValue + module + " " + topic
+            };
+
+            try {
+                const response = await fetch('/api/quizz/generate.js', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+                const data = await response.json();
+                quizDatabase = JSON.parse(data.response);
+                renderQuizzes();
+            } catch (error) {
+                console.error('Error generating quiz:', error);
+            }
+        }
+
+        function renderQuizzes() {
             quizContainer.style.display = 'block';
             submitQuizButton.style.display = 'block';
-    
+
             questionsContainer.innerHTML = '';
-    
+
             Object.keys(quizDatabase).forEach(topic => {
                 const quiz = quizDatabase[topic];
                 const quizTitle = document.createElement('h2');
                 quizTitle.textContent = `Quiz on ${topic.charAt(0).toUpperCase() + topic.slice(1)}`;
                 questionsContainer.appendChild(quizTitle);
-    
+
                 quiz.forEach((q, index) => {
                     const questionDiv = document.createElement('div');
                     questionDiv.className = 'question';
@@ -192,15 +230,15 @@
                 });
             });
         }
-    
-        submitQuizButton.addEventListener('click', function() {
+
+        function submitQuiz() {
             let score = 0;
             let totalQuestions = 0;
-    
+
             Object.keys(quizDatabase).forEach(topic => {
                 const quiz = quizDatabase[topic];
                 totalQuestions += quiz.length;
-    
+
                 quiz.forEach((q, index) => {
                     const selectedAnswer = document.querySelector(`input[name="q${index}_${topic}"]:checked`);
                     if (selectedAnswer && parseInt(selectedAnswer.value) === q.correctAnswer) {
@@ -208,14 +246,15 @@
                     }
                 });
             });
-    
+
             resultDiv.textContent = `Your score: ${score} out of ${totalQuestions}`;
-        });
+        }
+
+        document.getElementById('quiz-form').addEventListener('submit', generateQuiz);
+        submitQuizButton.addEventListener('click', submitQuiz);
+
+        // Fetch modules on page load
+        fetchModules();
     </script>
-    
-
-
-      
-=======
 </body>
 </html>
