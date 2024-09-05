@@ -29,73 +29,82 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        h1, h2 {
+        h1,
+        h2 {
             text-align: center;
             margin-bottom: 20px;
             color: #2c3e50;
         }
 
-        form {
+        .modules {
             display: grid;
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
             margin-bottom: 20px;
         }
 
-        select, input[type="text"], button {
+        .module {
+            background-color: #3498db;
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .module:hover {
+            background-color: #2980b9;
+        }
+
+        #assessments {
+            display: none;
+        }
+
+        table {
             width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th,
+        td {
             padding: 10px;
             border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        form {
+            display: grid;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
             border-radius: 3px;
-            font-size: 16px;
         }
 
         button {
-            background-color: #3498db;
+            background-color: #2ecc71;
             color: #fff;
             border: none;
+            padding: 10px;
+            border-radius: 3px;
             cursor: pointer;
             transition: background-color 0.3s;
         }
 
         button:hover {
-            background-color: #2980b9;
-        }
-
-        #quiz-container {
-            display: none;
-        }
-
-        .question {
-            margin-bottom: 20px;
-            background-color: #f9f9f9;
-            padding: 15px;
-            border-radius: 5px;
-        }
-
-        .options {
-            list-style-type: none;
-            padding-left: 0;
-        }
-
-        .options li {
-            margin-bottom: 10px;
-        }
-
-        .options label {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-        }
-
-        .options input[type="radio"] {
-            margin-right: 10px;
-        }
-
-        #result {
-            text-align: center;
-            font-weight: bold;
-            margin-top: 20px;
-            font-size: 18px;
+            background-color: #27ae60;
         }
 
         @media (max-width: 600px) {
@@ -103,8 +112,8 @@
                 padding: 10px;
             }
 
-            select, input[type="text"], button {
-                font-size: 14px;
+            .modules {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             }
         }
     </style>
@@ -122,7 +131,6 @@
                         <th>Assessment</th>
                         <th>Mark</th>
                         <th>Weight</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -139,17 +147,16 @@
             <input type="text" id="new-module-name" placeholder="New Module Name" required>
             <button type="submit">Add Module</button>
         </form>
-        <button id="disable-add-module" style="display:none;">No More Modules</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
 
         async function fetchKey() {
             const response = await fetch('/api/home/key.js');
             if (!response.ok) {
-                throw new Error(`Response status: ${response.status}`);
+                throw new Error(Response status: ${response.status});
             }
             const json = await response.json();
             return json;
@@ -178,9 +185,8 @@
         const addAssessmentForm = document.getElementById('add-assessment-form');
         const addModuleForm = document.getElementById('add-module-form');
         const totalMarksElement = document.getElementById('total-marks');
-        const disableAddModuleButton = document.getElementById('disable-add-module');
+
         let currentModule = '';
-        let canAddModule = true;
 
         function renderModules() {
             modulesContainer.innerHTML = '';
@@ -193,18 +199,6 @@
                     const moduleElement = document.createElement('div');
                     moduleElement.className = 'module';
                     moduleElement.textContent = module;
-
-                    const deleteButton = document.createElement('button');
-                    deleteButton.textContent = 'Delete';
-                    deleteButton.addEventListener('click', () => deleteModule(module));
-
-                    const editButton = document.createElement('button');
-                    editButton.textContent = 'Edit';
-                    editButton.addEventListener('click', () => editModule(module));
-
-                    moduleElement.appendChild(deleteButton);
-                    moduleElement.appendChild(editButton);
-
                     moduleElement.addEventListener('click', () => showAssessments(module));
                     modulesContainer.appendChild(moduleElement);
                 }
@@ -226,12 +220,6 @@
                     row.insertCell(0).textContent = assessment.name;
                     row.insertCell(1).textContent = assessment.mark;
                     row.insertCell(2).textContent = assessment.weight;
-
-                    const actionsCell = row.insertCell(3);
-                    const deleteButton = document.createElement('button');
-                    deleteButton.textContent = 'Delete';
-                    deleteButton.addEventListener('click', () => deleteAssessment(assessment.name));
-                    actionsCell.appendChild(deleteButton);
                 });
                 updateTotalMarks();
             }
@@ -245,7 +233,7 @@
                     totalMarks += assessment.mark * (assessment.weight / 100);
                     totalWeight += assessment.weight;
                 });
-                totalMarksElement.textContent = `Total Marks: ${Math.round(totalMarks)} / ${Math.round(totalWeight)}`;
+                totalMarksElement.textContent = Total Marks: ${Math.round(totalMarks)} / ${Math.round(totalWeight)};
             }
         }
 
@@ -256,7 +244,7 @@
             const weight = parseInt(document.getElementById('assessment-weight').value);
             
             if (currentModule) {
-                await uploadAssessment(name, mark, weight);
+                await upload(name, mark, weight);
                 if (!marksData[currentModule]) {
                     marksData[currentModule] = [];
                 }
@@ -266,7 +254,7 @@
             }
         });
 
-        async function uploadAssessment(name, mark, weight) {
+        async function upload(name, mark, weight) {
             try {
                 await addDoc(collection(db, "assessments"), {
                     name: name,
@@ -274,9 +262,9 @@
                     weight: weight,
                     module: currentModule
                 });
-                console.log("Assessment added successfully");
+                console.log("Document written successfully");
             } catch (e) {
-                console.error("Error adding assessment: ", e);
+                console.error("Error adding document: ", e);
             }
         }
 
@@ -301,15 +289,13 @@
         addModuleForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             const newModuleName = document.getElementById('new-module-name').value;
-            if (canAddModule && !marksData[newModuleName]) {
+            if (!marksData[newModuleName]) {
                 marksData[newModuleName] = [];
                 await uploadModule(newModuleName);
                 renderModules();
                 addModuleForm.reset();
-                canAddModule = false; // Disable further module addition
-                disableAddModuleButton.style.display = 'block'; // Show "No More Modules" button
             } else {
-                alert('Module already exists or no more modules can be added!');
+                alert('Module already exists!');
             }
         });
 
@@ -319,81 +305,6 @@
                 console.log("Module added successfully");
             } catch (e) {
                 console.error("Error adding module: ", e);
-            }
-        }
-
-        async function deleteModule(moduleName) {
-            if (confirm(`Are you sure you want to delete the module: ${moduleName}?`)) {
-                try {
-                    // Delete all assessments related to this module
-                    const assessmentsQuery = collection(db, "assessments");
-                    const querySnapshot = await getDocs(assessmentsQuery);
-                    querySnapshot.forEach(async (doc) => {
-                        if (doc.data().module === moduleName) {
-                            await deleteDoc(doc.ref);
-                        }
-                    });
-
-                    // Delete the module itself
-                    const moduleRef = doc(db, "modules", moduleName);
-                    await deleteDoc(moduleRef);
-                    
-                    delete marksData[moduleName];
-                    renderModules();
-                } catch (e) {
-                    console.error("Error deleting module: ", e);
-                }
-            }
-        }
-
-        async function deleteAssessment(assessmentName) {
-            if (confirm(`Are you sure you want to delete the assessment: ${assessmentName}?`)) {
-                try {
-                    const assessmentsQuery = collection(db, "assessments");
-                    const querySnapshot = await getDocs(assessmentsQuery);
-                    querySnapshot.forEach(async (doc) => {
-                        if (doc.data().name === assessmentName && doc.data().module === currentModule) {
-                            await deleteDoc(doc.ref);
-                        }
-                    });
-
-                    // Remove assessment from local data
-                    marksData[currentModule] = marksData[currentModule].filter(a => a.name !== assessmentName);
-                    renderMarksTable();
-                } catch (e) {
-                    console.error("Error deleting assessment: ", e);
-                }
-            }
-        }
-
-        function editModule(moduleName) {
-            const newModuleName = prompt("Enter new name for the module:", moduleName);
-            if (newModuleName && newModuleName !== moduleName) {
-                // Update module name in Firestore
-                updateModuleName(moduleName, newModuleName);
-            }
-        }
-
-        async function updateModuleName(oldName, newName) {
-            try {
-                const moduleRef = doc(db, "modules", oldName);
-                await updateDoc(moduleRef, { module: newName });
-                
-                // Update all related assessments
-                const assessmentsQuery = collection(db, "assessments");
-                const querySnapshot = await getDocs(assessmentsQuery);
-                querySnapshot.forEach(async (doc) => {
-                    if (doc.data().module === oldName) {
-                        await updateDoc(doc.ref, { module: newName });
-                    }
-                });
-
-                // Update local data
-                marksData[newName] = marksData[oldName];
-                delete marksData[oldName];
-                renderModules();
-            } catch (e) {
-                console.error("Error updating module name: ", e);
             }
         }
 
