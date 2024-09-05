@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Study Calendar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #calendar {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #calendar th, #calendar td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        #calendar th {
+            background-color: #3498db;
+            color: white;
+        }
+
+        #calendar td {
+            height: 100px;
+            vertical-align: top;
+        }
+
+        .event {
+            background-color: #eaf0f1;
+            border-left: 4px solid #3498db;
+            padding: 5px;
+            margin-bottom: 5px;
+        }
+
+        #preparation-checklist {
+            margin-top: 20px;
+        }
+
+        #preparation-checklist ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #preparation-checklist li {
+            margin-bottom: 10px;
+        }
+
+        #preparation-checklist input[type="checkbox"] {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Monthly Study Calendar</h1>
+        <table id="calendar">
+            <thead>
+                <tr>
+                    <th>Sun</th>
+                    <th>Mon</th>
+                    <th>Tue</th>
+                    <th>Wed</th>
+                    <th>Thu</th>
+                    <th>Fri</th>
+                    <th>Sat</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <div id="preparation-checklist">
+            <h2>Preparation Checklist</h2>
+            <ul></ul>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
+
+        async function fetchKey() {
+            const response = await fetch('/api/home/key.js');
+            if (!response.ok) {
+                throw new Error(`Error fetching API key: ${response.status}`);
+            }
+            const json = await response.json();
+            return json;
+        }
+
+        const myKey = await fetchKey();
+
+        const firebaseConfig = {
+            apiKey: myKey.myKey,
+            authDomain: "aisturdyhelp.firebaseapp.com",
+            projectId: "aisturdyhelp",
+            storageBucket: "aisturdyhelp.appspot.com",
+            messagingSenderId: "309870602306",
+            appId: "1:309870602306:web:2273af72ef06e750c0a5db",
+            measurementId: "G-L12NERV1JR"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function fetchCalendarData() {
+            try {
+                const scheduleSnapshot = await getDocs(collection(db, "schedule"));
+                const events = scheduleSnapshot.docs.map(doc => doc.data());
+
+                const currentDate = new Date();
+                const currentYear = currentDate.getFullYear();
+                const currentMonth = currentDate.getMonth();
+                const firstDay = new Date(currentYear, currentMonth, 1);
+                const lastDay = new Date(currentYear, currentMonth + 1, 0);
+                const daysInMonth = lastDay.getDate();
+
+                const calendarBody = document.querySelector("#calendar tbody");
+                calendarBody.innerHTML = '';
+
+                let row = calendarBody.insertRow();
+                for (let i = 0; i < firstDay.getDay(); i++) {
+                    row.insertCell();
+                }
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const cell = row.insertCell();
+                    cell.innerHTML = day;
+
+                    const dayEvents = events.filter(event => new Date(event.date).getDate() === day);
+                    dayEvents.forEach(event => {
+                        const eventDiv = document.createElement('div');
+                        eventDiv.className = 'event';
+                        eventDiv.textContent = event.name;
+                        cell.appendChild(eventDiv);
+                    });
+
+                    if (row.cells.length === 7) {
+                        row = calendarBody.insertRow();
+                    }
+                }
+            } catch (e) {
+                console.error("Error fetching calendar data: ", e);
+            }
+        }
+
+        async function fetchChecklist() {
+            try {
+                const checklistSnapshot = await getDocs(collection(db, "checklist"));
+                const items = checklistSnapshot.docs.map(doc => doc.data());
+
+                const checklistUl = document.querySelector("#preparation-checklist ul");
+                checklistUl.innerHTML = '';
+
+                items.forEach(item => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<input type="checkbox" id="check-${item.id}" ${item.completed ? 'checked' : ''}> <label for="check-${item.id}">${item.task}</label>`;
+                    checklistUl.appendChild(li);
+                });
+            } catch (e) {
+                console.error("Error fetching checklist: ", e);
+            }
+        }
+
+        fetchCalendarData();
+        fetchChecklist();
+    </script>
+</body>
+
+</html>

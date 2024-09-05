@@ -101,7 +101,7 @@
             // Change clicked tile color
             tile.style.backgroundColor = 'white';
             tile.style.color = getComputedStyle(tile).backgroundColor;
-
+            
             // Here you would typically add logic to show more details or navigate to a new page
             console.log(tile.id + ' clicked');
 
@@ -115,6 +115,9 @@
             if(tile.id == "marks"){
                 window.location.href = "/marks.html";
 
+            }
+            if(tile.id == "study-plan"){
+                window.location.href = "/plan.html";
             }
         }
     </script>
