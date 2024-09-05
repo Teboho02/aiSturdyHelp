@@ -5,107 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dynamic Quiz Generator</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            background-color: #f4f4f4;
-            color: #333;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        h1, h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #2c3e50;
-        }
-
-        form {
-            display: grid;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        select, input[type="text"], button {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            font-size: 16px;
-        }
-
-        button {
-            background-color: #3498db;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #2980b9;
-        }
-
-        #quiz-container {
-            display: none;
-        }
-
-        .question {
-            margin-bottom: 20px;
-            background-color: #f9f9f9;
-            padding: 15px;
-            border-radius: 5px;
-        }
-
-        .options {
-            list-style-type: none;
-            padding-left: 0;
-        }
-
-        .options li {
-            margin-bottom: 10px;
-        }
-
-        .options label {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-        }
-
-        .options input[type="radio"] {
-            margin-right: 10px;
-        }
-
-        #result {
-            text-align: center;
-            font-weight: bold;
-            margin-top: 20px;
-            font-size: 18px;
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                padding: 10px;
-            }
-
-            select, input[type="text"], button {
-                font-size: 14px;
-            }
-        }
+        /* Your existing styles */
     </style>
 </head>
 <body>
@@ -159,6 +59,9 @@
         async function fetchModules() {
             try {
                 const snapshot = await db.collection('modules').get();
+                if (snapshot.empty) {
+                    throw new Error("No modules found");
+                }
                 snapshot.forEach(doc => {
                     const moduleName = doc.data().module;
                     const option = document.createElement('option');
@@ -168,6 +71,7 @@
                 });
             } catch (error) {
                 console.error("Error fetching modules: ", error);
+                alert("Failed to fetch modules. Check console for details.");
             }
         }
 
@@ -190,11 +94,17 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestBody)
                 });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
                 const data = await response.json();
                 quizDatabase = JSON.parse(data.response);
                 renderQuizzes();
             } catch (error) {
                 console.error('Error generating quiz:', error);
+                alert('Failed to generate quiz. Check console for details.');
             }
         }
 
