@@ -4,20 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monthly Study Calendar</title>
+    <title>Dynamic Calendar</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
             margin: 0;
-            padding: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 20px auto;
+            max-width: 900px;
+            margin: 0 auto;
             padding: 20px;
-            background: #fff;
+            background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
@@ -28,84 +28,76 @@
         }
 
         #calendar {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        #calendar th, #calendar td {
-            border: 1px solid #ddd;
-            padding: 10px;
+            margin: 20px 0;
             text-align: center;
         }
 
-        #calendar th {
-            background-color: #3498db;
-            color: white;
+        .event-form,
+        .event-list {
+            margin: 20px 0;
         }
 
-        #calendar td {
-            height: 100px;
-            vertical-align: top;
+        .event-form input,
+        .event-form button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
         }
 
-        .event {
-            background-color: #eaf0f1;
-            border-left: 4px solid #3498db;
-            padding: 5px;
-            margin-bottom: 5px;
-        }
-
-        #preparation-checklist {
-            margin-top: 20px;
-        }
-
-        #preparation-checklist ul {
+        .event-list {
             list-style-type: none;
             padding: 0;
         }
 
-        #preparation-checklist li {
-            margin-bottom: 10px;
+        .event-list li {
+            background-color: #e0e0e0;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
         }
 
-        #preparation-checklist input[type="checkbox"] {
-            margin-right: 10px;
+        .event-list button {
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        .event-list button:hover {
+            background-color: #2980b9;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>Monthly Study Calendar</h1>
-        <table id="calendar">
-            <thead>
-                <tr>
-                    <th>Sun</th>
-                    <th>Mon</th>
-                    <th>Tue</th>
-                    <th>Wed</th>
-                    <th>Thu</th>
-                    <th>Fri</th>
-                    <th>Sat</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <h1>Dynamic Calendar</h1>
+        <div id="calendar"></div>
 
-        <div id="preparation-checklist">
-            <h2>Preparation Checklist</h2>
-            <ul></ul>
+        <div class="event-form">
+            <h2>Add Event</h2>
+            <input type="date" id="event-date" placeholder="Date" required>
+            <input type="text" id="event-title" placeholder="Event Title" required>
+            <textarea id="event-description" placeholder="Event Description"></textarea>
+            <button id="add-event-button">Add Event</button>
+        </div>
+
+        <div class="event-list">
+            <h2>Upcoming Events</h2>
+            <ul id="event-list"></ul>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
 
         async function fetchKey() {
             const response = await fetch('/api/home/key.js');
             if (!response.ok) {
-                throw new Error(`Error fetching API key: ${response.status}`);
+                throw new Error(`Response status: ${response.status}`);
             }
             const json = await response.json();
             return json;
@@ -126,67 +118,109 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        async function fetchCalendarData() {
-            try {
-                const scheduleSnapshot = await getDocs(collection(db, "schedule"));
-                const events = scheduleSnapshot.docs.map(doc => doc.data());
+        const calendarElement = document.getElementById('calendar');
+        const eventListElement = document.getElementById('event-list');
+        const eventDateInput = document.getElementById('event-date');
+        const eventTitleInput = document.getElementById('event-title');
+        const eventDescriptionInput = document.getElementById('event-description');
+        const addEventButton = document.getElementById('add-event-button');
 
-                const currentDate = new Date();
-                const currentYear = currentDate.getFullYear();
-                const currentMonth = currentDate.getMonth();
-                const firstDay = new Date(currentYear, currentMonth, 1);
-                const lastDay = new Date(currentYear, currentMonth + 1, 0);
-                const daysInMonth = lastDay.getDate();
+        function renderCalendar() {
+            const currentDate = new Date();
+            const month = currentDate.getMonth();
+            const year = currentDate.getFullYear();
 
-                const calendarBody = document.querySelector("#calendar tbody");
-                calendarBody.innerHTML = '';
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
 
-                let row = calendarBody.insertRow();
-                for (let i = 0; i < firstDay.getDay(); i++) {
-                    row.insertCell();
-                }
+            let calendarHtml = '<table border="1"><tr>';
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            dayNames.forEach(day => {
+                calendarHtml += `<th>${day}</th>`;
+            });
+            calendarHtml += '</tr><tr>';
 
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const cell = row.insertCell();
-                    cell.innerHTML = day;
-
-                    const dayEvents = events.filter(event => new Date(event.date).getDate() === day);
-                    dayEvents.forEach(event => {
-                        const eventDiv = document.createElement('div');
-                        eventDiv.className = 'event';
-                        eventDiv.textContent = event.name;
-                        cell.appendChild(eventDiv);
-                    });
-
-                    if (row.cells.length === 7) {
-                        row = calendarBody.insertRow();
-                    }
-                }
-            } catch (e) {
-                console.error("Error fetching calendar data: ", e);
+            for (let i = 0; i < firstDay; i++) {
+                calendarHtml += '<td></td>';
             }
+
+            for (let day = 1; day <= lastDate; day++) {
+                if ((firstDay + day - 1) % 7 === 0 && day > 1) {
+                    calendarHtml += '</tr><tr>';
+                }
+                calendarHtml += `<td>${day}</td>`;
+            }
+
+            calendarHtml += '</tr></table>';
+            calendarElement.innerHTML = calendarHtml;
         }
 
-        async function fetchChecklist() {
+        function renderEventList(events) {
+            eventListElement.innerHTML = '';
+            events.forEach(event => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <strong>${event.title}</strong><br>
+                    ${event.date} - ${event.description}
+                    <button onclick="deleteEvent('${event.id}')">Delete</button>
+                `;
+                eventListElement.appendChild(li);
+            });
+        }
+
+        async function fetchEvents() {
             try {
-                const checklistSnapshot = await getDocs(collection(db, "checklist"));
-                const items = checklistSnapshot.docs.map(doc => doc.data());
-
-                const checklistUl = document.querySelector("#preparation-checklist ul");
-                checklistUl.innerHTML = '';
-
-                items.forEach(item => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `<input type="checkbox" id="check-${item.id}" ${item.completed ? 'checked' : ''}> <label for="check-${item.id}">${item.task}</label>`;
-                    checklistUl.appendChild(li);
+                const querySnapshot = await getDocs(collection(db, "events"));
+                const events = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    events.push({ id: doc.id, ...data });
                 });
+                renderEventList(events);
             } catch (e) {
-                console.error("Error fetching checklist: ", e);
+                console.error("Error fetching events: ", e);
             }
         }
 
-        fetchCalendarData();
-        fetchChecklist();
+        async function addEvent(event) {
+            try {
+                await addDoc(collection(db, "events"), event);
+                console.log("Event added successfully");
+                fetchEvents();
+            } catch (e) {
+                console.error("Error adding event: ", e);
+            }
+        }
+
+        async function deleteEvent(eventId) {
+            if (confirm("Are you sure you want to delete this event?")) {
+                try {
+                    await deleteDoc(doc(db, "events", eventId));
+                    console.log("Event deleted successfully");
+                    fetchEvents();
+                } catch (e) {
+                    console.error("Error deleting event: ", e);
+                }
+            }
+        }
+
+        addEventButton.addEventListener('click', () => {
+            const date = eventDateInput.value;
+            const title = eventTitleInput.value;
+            const description = eventDescriptionInput.value;
+
+            if (date && title) {
+                addEvent({ date, title, description });
+                eventDateInput.value = '';
+                eventTitleInput.value = '';
+                eventDescriptionInput.value = '';
+            } else {
+                alert("Please fill in all required fields.");
+            }
+        });
+
+        renderCalendar();
+        fetchEvents();
     </script>
 </body>
 
