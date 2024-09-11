@@ -3,7 +3,7 @@ name: Run tests and upload coverage
 on:
   push:
     branches:
-      - main 
+      - main  # Change this to the branch you want to run the workflow on, e.g., 'main' or 'master'
 
 jobs:
   test:
@@ -25,7 +25,9 @@ jobs:
         run: npm install
 
       - name: Run tests
-        run: npx jest --coverage
+        run: |
+          npx jest --version
+          npx jest --coverage
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
