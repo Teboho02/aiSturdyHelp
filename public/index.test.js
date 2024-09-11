@@ -7,11 +7,13 @@ describe('Learning Dashboard Tests', () => {
   beforeAll(async () => {
     browser = await puppeteer.launch({ headless: false }); // Set to 'true' to run in headless mode
     page = await browser.newPage();
-    await page.goto('file://' + __dirname + '/index.html'); // Replace with your file path
+    await page.goto('file://' + __dirname + '/index.html'); // Adjust the path to your HTML file
   });
 
   afterAll(async () => {
-    await browser.close();
+    if (browser) {
+      await browser.close();
+    }
   });
 
   test('Page title should be "Learning Dashboard"', async () => {
