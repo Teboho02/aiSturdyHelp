@@ -24,8 +24,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Clear Puppeteer cache
+        run: rm -rf /home/runner/.cache/puppeteer
+
       - name: Install Puppeteer browsers
-        run: npx puppeteer install
+        run: npm install puppeteer
 
       - name: Verify Node.js and npm versions
         run: |
