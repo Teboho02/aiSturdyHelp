@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: '16'
 
-      - name: Clean npm cache
+      - name: Clear npm cache
         run: npm cache clean --force
 
       - name: Install dependencies
@@ -30,13 +30,16 @@ jobs:
       - name: List files in node_modules/.bin
         run: ls -l node_modules/.bin
 
-      - name: Check file permissions
+      - name: Verify Node.js and npm versions
         run: |
-          ls -l node_modules/.bin/jest
-          file node_modules/.bin/jest
+          node --version
+          npm --version
 
-      - name: Run tests
-        run: npx jest --coverage
+      - name: Verify Jest version
+        run: npx jest --version
+
+      - name: Run tests with full path
+        run: ./node_modules/.bin/jest --coverage
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
