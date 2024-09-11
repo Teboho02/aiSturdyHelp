@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "/src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
@@ -13,5 +13,9 @@
     "@vercel/blob": "^0.23.4",
     "firebase": "^10.13.0",
     "google-auth-library": "^9.14.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "puppeteer": "^23.3.0"
   }
 }
