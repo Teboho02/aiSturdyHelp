@@ -21,14 +21,19 @@ jobs:
         with:
           node-version: '16'
 
+      - name: Clean npm cache
+        run: npm cache clean --force
+
       - name: Install dependencies
         run: npm install
 
-      - name: Clear Puppeteer cache
-        run: rm -rf /home/runner/.cache/puppeteer
+      - name: List files in node_modules/.bin
+        run: ls -l node_modules/.bin
 
-      - name: Install Puppeteer browsers
-        run: npm install puppeteer
+      - name: Check file permissions
+        run: |
+          ls -l node_modules/.bin/jest
+          file node_modules/.bin/jest
 
       - name: Verify Node.js and npm versions
         run: |
@@ -37,9 +42,6 @@ jobs:
 
       - name: Verify Jest version
         run: npx jest --version
-
-      - name: Verify Puppeteer version
-        run: npx puppeteer --version
 
       - name: Run tests
         run: npx jest --coverage
