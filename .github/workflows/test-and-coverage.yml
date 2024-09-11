@@ -22,8 +22,13 @@ jobs:
       - name: Clear npm cache
         run: npm cache clean --force
 
+      - name: Remove node_modules
+        run: rm -rf node_modules
+
       - name: Install dependencies
-        run: npm install
+        run: |
+          npm install
+          npm install jest puppeteer --save-dev
 
       - name: List files in node_modules/.bin
         run: ls -l node_modules/.bin
@@ -33,14 +38,18 @@ jobs:
           node --version
           npm --version
 
-      - name: Check Jest permissions
+      - name: Verify Jest installation
         run: |
           if [ -x "./node_modules/.bin/jest" ]; then echo "Jest is executable"; else echo "Jest is not executable"; fi
 
-      - name: Run Jest with full path
+      - name: Verify Puppeteer installation
+        run: |
+          if [ -x "./node_modules/.bin/puppeteer" ]; then echo "Puppeteer is executable"; else echo "Puppeteer is not executable"; fi
+
+      - name: Run Jest version
         run: ./node_modules/.bin/jest --version
 
-      - name: Run tests with full path
+      - name: Run tests with coverage
         run: ./node_modules/.bin/jest --coverage
 
       - name: Upload coverage to Codecov
