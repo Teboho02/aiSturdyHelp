@@ -3,7 +3,7 @@ name: Run tests and upload coverage
 on:
   push:
     branches:
-      - main  # Change this to the branch you want to run the workflow on, e.g., 'main' or 'master'
+      - main
 
 jobs:
   test:
@@ -16,20 +16,27 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Fix permissions
-        run: chmod -R u+x node_modules/.bin
-        
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '16'  # Specify the Node.js version you want to use
+          node-version: '16'
 
       - name: Install dependencies
         run: npm install
 
+      - name: Install Puppeteer browsers
+        run: npx puppeteer install
+
+      - name: Verify Node.js and npm versions
+        run: |
+          node --version
+          npm --version
+
       - name: Verify Jest version
         run: npx jest --version
+
+      - name: Verify Puppeteer version
+        run: npx puppeteer --version
 
       - name: Run tests
         run: npx jest --coverage
