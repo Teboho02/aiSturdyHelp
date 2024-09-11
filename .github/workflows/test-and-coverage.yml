@@ -26,8 +26,9 @@ jobs:
 
       - name: Run tests
         run: |
-          npx jest --version
-          npx jest --coverage
+          ./node_modules/.bin/jest --version
+          ./node_modules/.bin/jest --coverage
+
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
