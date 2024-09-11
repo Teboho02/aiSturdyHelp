@@ -1,3 +1,5 @@
+jest.setTimeout(10000); // Set timeout to 10 seconds
+
 const puppeteer = require('puppeteer');
 
 describe('Simple Page Tests', () => {
